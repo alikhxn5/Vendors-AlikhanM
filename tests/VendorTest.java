@@ -349,6 +349,41 @@ public class VendorTest {
         assertEquals(1, vendor.getPurchaseCount("Chocolate"));
     }
 
+    // Story: check item details before buying
+    @Test
+    void starterItemDescriptionsCheck(){
+        assertEquals("A sweet chocolate treat.", vendor.getDescription("Candy"));
+        assertEquals("Chewy mint gum that freshens your breath", vendor.getDescription("Gum"));
+    }
+
+    @Test
+    void newItemsGetDefaultDescriptions(){
+        vendor.restock("Chips", 3, 1.50);
+        assertEquals("No description available.", vendor.getDescription("Chips"));
+    }
+
+    @Test
+    void setDescriptionUpdatesItems(){
+        assertTrue(vendor.setDescription("Gum", "Bubble gum. Blows big bubbles."));
+        assertEquals("Bubble gum. Blows big bubbles.", vendor.getDescription("Gum"));
+    }
+
+    @Test
+    void setDescriptionOnUnknownFail(){
+        assertFalse(vendor.setDescription("Chips", "Salty and crunch."));
+    }
+
+    @Test
+    void itemDetailsShowPriceStockNDescription(){
+        assertEquals("Candy - $1.25 - 10 in stock - A sweet chocolate treat.", vendor.getItemDetails("Candy"));
+    }
+
+    @Test
+    void detailsOfUnknownItemThrows(){
+        assertThrows(IllegalArgumentException.class, () -> vendor.getItemDetails("Chips"));
+        assertThrows(IllegalArgumentException.class, () -> vendor.getDescription("Chips"));
+    }
+
 }
 
 

@@ -24,8 +24,8 @@ class Vendor {
     /** creates a named vendor with the given amounts of Candy and Gum */
     Vendor(String name, int numCandy, int numGum) {
         this.name = name;
-        stock.put("Candy", new Item(1.25, numCandy));
-        stock.put("Gum", new Item(.5, numGum));
+        stock.put("Candy", new Item(1.25, numCandy, "A sweet chocolate treat."));
+        stock.put("Gum", new Item(.5, numGum, "Chewy mint gum that freshens your breath"));
         this.balance = 0;
     }
 
@@ -79,16 +79,52 @@ class Vendor {
      }
 
     /**
-     * Returns the price of the named item
+     * Returns the price of the named item.
      *
      * @throws IllegalArgumentException if the vendor does not carry the item
      */
     double getPrice(String name){
+        return findItem(name).price;
+    }
+
+    /**
+     * Returns the named item's description, so a customer can check it before purchasing.
+     *
+     * @throws IllegalArgumentException if the vendor doesn't carry the item
+     */
+    String getDescription(String name){
+        return findItem(name).description;
+    }
+
+    /**
+     * Changes the named item's description
+     */
+    boolean setDescription(String name, String description){
         Item item = stock.get(name);
-        if(item == null){
+        if(item==null){
+            return false;
+        }
+        item.description = description;
+        return true;
+    }
+
+    /**
+     * Returns a one-line summary of an item for a customer to read before purchasing.
+     *
+     * @throws IllegalArgumentException if the vendor doesn't carry the item.
+     */
+    String getItemDetails(String name){
+        Item item = findItem(name);
+        return String.format("%s - $%.2f - %d in stock - %s", name, item.price, item.stock, item.description);
+    }
+
+    // looks up an item, throwing an exception if the vendor doesn't carry the item.
+    private Item findItem(String name){
+        Item item = stock.get(name);
+        if(item==null){
             throw new IllegalArgumentException("Unknown item: " + name);
         }
-        return item.price;
+        return item;
     }
 
     /**
