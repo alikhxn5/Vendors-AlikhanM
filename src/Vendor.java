@@ -155,6 +155,18 @@ class Vendor {
         stock.put(newName, stock.remove(oldName));
         return true;
     }
+
+    /**
+     * Removes a discontinued item from the inventory
+     *
+     * @param name the item to remove
+     * @return true if the item was removed, false if the vendor did not carry it.
+     */
+    boolean removeItem(String name){
+        return stock.remove(name)!=null;
+    }
+
+
     /**
      * Builds a printable list of this vendor's items, sorted by name. Example:
      * <pre>
@@ -165,7 +177,10 @@ class Vendor {
      */
     String getInventoryReport() {
         StringBuilder report = new StringBuilder("=== " + name + " ===" + System.lineSeparator());
-        for (Map.Entry<String, Item> entry : stock.entrySet()) {
+        if(stock.isEmpty()){
+            report.append("(no items)").append(System.lineSeparator());
+        }
+        for (Map.Entry<String, Item> entry : stock.entrySet()){
             Item item = entry.getValue();
             report.append(String.format("%s: %d in stock @ $%.2f%n",
                     entry.getKey(), item.stock, item.price));

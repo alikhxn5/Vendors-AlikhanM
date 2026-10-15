@@ -10,12 +10,12 @@ public class VendorTest {
     private Vendor vendor;
 
     @BeforeEach
-    void setUp(){
+    void setUp() {
         vendor = new Vendor(10, 5);
     }
 
     @Test
-    void newVenStartStock(){
+    void newVenStartStock() {
         assertEquals(10, vendor.getStock("Candy"));
         assertEquals(5, vendor.getStock("Gum"));
     }
@@ -102,9 +102,9 @@ public class VendorTest {
     }
 
     @Test
-    void cantBuyItemSoldOut(){
+    void cantBuyItemSoldOut() {
         vendor.addMoney(20.00);
-        for(int i = 0; i < 5; i++){
+        for (int i = 0; i < 5; i++) {
             vendor.select("Gum");
         }
         //6th Gum: none left....
@@ -133,8 +133,8 @@ public class VendorTest {
     }
 
     @Test
-    void restockedItemBuyPostSellOut(){
-        Vendor empty = new Vendor(0,0);
+    void restockedItemBuyPostSellOut() {
+        Vendor empty = new Vendor(0, 0);
         empty.addMoney(1.25);
         // sold out
         assertFalse(empty.select("Candy"));
@@ -146,7 +146,7 @@ public class VendorTest {
     }
 
     @Test
-    void restockRejectZeroNegativeAmt(){
+    void restockRejectZeroNegativeAmt() {
         assertThrows(IllegalArgumentException.class, () -> vendor.restock("Candy", 0));
         assertThrows(IllegalArgumentException.class, () -> vendor.restock("Candy", -4));
         assertEquals(10, vendor.getStock("Candy"));
@@ -160,7 +160,7 @@ public class VendorTest {
 
     // Story: restocking adds unavailable items
     @Test
-    void restockAddsNewItemToInventory(){
+    void restockAddsNewItemToInventory() {
         assertFalse(vendor.hasItem("Chips"));
         vendor.restock("Chips", 8, 1.50);
         assertTrue(vendor.hasItem("Chips"));
@@ -169,7 +169,7 @@ public class VendorTest {
     }
 
     @Test
-    void newlyStockedItemPurchasable(){
+    void newlyStockedItemPurchasable() {
         vendor.restock("Chips", 2, 1.50);
         vendor.addMoney(1.50);
         assertTrue(vendor.select("Chips"));
@@ -177,7 +177,7 @@ public class VendorTest {
     }
 
     @Test
-    void restockWPriceOnExistingItemKeepsOGPrice(){
+    void restockWPriceOnExistingItemKeepsOGPrice() {
         vendor.restock("Candy", 5, 9.99);
         assertEquals(15, vendor.getStock("Candy"));
         assertEquals(1.25, vendor.getPrice("Candy"), DELTA);
@@ -185,7 +185,7 @@ public class VendorTest {
     }
 
     @Test
-    void restockNewItemRejectInvalidInput(){
+    void restockNewItemRejectInvalidInput() {
         assertThrows(IllegalArgumentException.class, () -> vendor.restock("Chips", 5, 0));
         assertThrows(IllegalArgumentException.class, () -> vendor.restock("Chips", 0, 1.50));
         assertThrows(IllegalArgumentException.class, () -> vendor.restock(" ", 5, 1.50));
@@ -199,7 +199,7 @@ public class VendorTest {
 
     // story: rename an item
     @Test
-    void renameItemKeepsDetails(){
+    void renameItemKeepsDetails() {
         assertTrue(vendor.renameItem("Candy", "Chocolate Bar"));
         assertFalse(vendor.hasItem("Candy"));
         assertTrue(vendor.hasItem("Chocolate Bar"));
@@ -208,7 +208,7 @@ public class VendorTest {
     }
 
     @Test
-    void renamedBoughtbyName(){
+    void renamedBoughtbyName() {
         vendor.renameItem("Gum", "Mint Gum");
         vendor.addMoney(1.00);
         assertFalse(vendor.select("Gum"));
@@ -216,37 +216,76 @@ public class VendorTest {
     }
 
     @Test
-    void renamedUnknownFail(){
+    void renamedUnknownFail() {
         assertFalse(vendor.renameItem("Chips", "Crisps"));
         assertFalse(vendor.hasItem("Crisps"));
     }
 
     @Test
-    void renameToExistingNameFailsNoOverwriting(){
+    void renameToExistingNameFailsNoOverwriting() {
         assertFalse(vendor.renameItem("Candy", "Gum"));
         assertEquals(10, vendor.getStock("Candy"));
         assertEquals(5, vendor.getStock("Gum"));
     }
 
     @Test
-    void renameToBlankFails(){
+    void renameToBlankFails() {
         assertFalse(vendor.renameItem("Candy", "   "));
         assertTrue(vendor.hasItem("Candy"));
     }
 
     // story: manage and print vendors
     @Test
-    void vendorKeepsName(){
+    void vendorKeepsName() {
         Vendor named = new Vendor("Vendor 7", 1, 1);
         assertEquals("Vendor 7", named.getName());
     }
 
     @Test
-    void inventoryReportListsAtoB(){
+    void inventoryReportListsAtoB() {
         vendor.restock("Apple", 3, 0.75);
         String report = vendor.getInventoryReport();
         assertTrue(report.indexOf("Apple") < report.indexOf("Candy"));
         assertTrue(report.indexOf("Candy") < report.indexOf("Gum"));
     }
 
+    // story: remove discontinued items
+    @Test
+    void removeItemDeletesItFromInv() {
+        assertTrue(vendor.removeItem("Gum"));
+        assertFalse(vendor.hasItem("Gum"));
+        assertEquals(0, vendor.getStock("Gum"));
+    }
+
+    @Test
+    void removedItemCantBePurchased() {
+        vendor.removeItem("Candy");
+        vendor.addMoney(5.00);
+        assertFalse(vendor.select("Candy"));
+        assertEquals(5.00, vendor.getBalance(), DELTA);
+    }
+
+    @Test
+    void removeUnkownItemsReturnsF() {
+        assertFalse(vendor.removeItem("Chips"));
+    }
+
+
+    @Test
+    void removedItemNotInReport(){
+        vendor.removeItem("Gum");
+        String report = vendor.getInventoryReport();
+        assertFalse(report.contains("Gum"));
+        assertTrue(report.contains("Candy"));
+    }
+
+    @Test
+    void removingEveryItemShowsEmptyInv(){
+        vendor.removeItem("Candy");
+        vendor.removeItem("Gum");
+        assertTrue(vendor.getInventoryReport().contains("(no items)"));
+    }
+
 }
+
+
