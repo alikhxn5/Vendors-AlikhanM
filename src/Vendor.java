@@ -8,7 +8,7 @@ import java.util.TreeMap;
  * Class for an NPC vendor (a vending machine). Contains a map from item names to
  * item data, as well as the current balance of money that has been deposited into the machine.
  */
-class Vendor {
+class Vendor{
     // Each vendor has its own inventory. In the starter code this map was static,
     // so every vendor shared (and overwrote) the same stock.
     // A TreeMap keeps the items sorted by name, so printed inventories are predictable.
@@ -16,35 +16,41 @@ class Vendor {
     private final String name;
     private double balance;
 
-    /** creates a vendor named "Vendor" with the given amounts of Candy and Gum */
-    Vendor(int numCandy, int numGum) {
+    /**
+     * creates a vendor named "Vendor" with the given amounts of Candy and Gum
+     */
+    Vendor(int numCandy, int numGum){
         this("Vendor", numCandy, numGum);
     }
 
-    /** creates a named vendor with the given amounts of Candy and Gum */
-    Vendor(String name, int numCandy, int numGum) {
+    /**
+     * creates a named vendor with the given amounts of Candy and Gum
+     */
+    Vendor(String name, int numCandy, int numGum){
         this.name = name;
-        stock.put("Candy", new Item(1.25, numCandy, "A sweet chocolate treat."));
-        stock.put("Gum", new Item(.5, numGum, "Chewy mint gum that freshens your breath"));
+        stock.put("Candy", new Item(1.25, numCandy, "A sweet chocolate treat.", "Snacks"));
+        stock.put("Gum", new Item(.5, numGum, "Chewy mint gum that freshens your breath.", "Snacks"));
         this.balance = 0;
     }
 
-    /** returns this vendor's name */
-    String getName() {
+    /**
+     * returns this vendor's name
+     */
+    String getName(){
         return name;
     }
 
     /**
      * resets the Balance to 0
      */
-    void resetBalance() {
+    void resetBalance(){
         this.balance = 0;
     }
 
     /**
      * returns the current balance
      */
-    double getBalance() {
+    double getBalance(){
         return this.balance;
     }
 
@@ -55,8 +61,8 @@ class Vendor {
      * @throws IllegalArgumentException if amt is zero or negative
      *
      */
-    void addMoney(double amt) {
-        if (amt <= 0) {
+    void addMoney(double amt){
+        if (amt <= 0){
             throw new IllegalArgumentException("Amount must be positive");
         }
         this.balance = this.balance + amt;
@@ -68,23 +74,23 @@ class Vendor {
      * @param name the item to lookup
      * @return the stock count, or 0 if this vendor does not carry the item
      */
-    int getStock(String name) {
+    int getStock(String name){
         Item item = stock.get(name);
         return item == null ? 0 : item.stock;
     }
 
     // returns true if this vendor carries the named item
-     boolean hasItem(String name){
+    boolean hasItem(String name){
         return stock.containsKey(name);
-     }
+    }
 
     /**
-     * Returns the price of the named item.
+     * Returns the price a customer pays for the named item, after any discount.
      *
      * @throws IllegalArgumentException if the vendor does not carry the item
      */
     double getPrice(String name){
-        return findItem(name).price;
+        return findItem(name).getSalePrice();
     }
 
     /**
@@ -101,7 +107,7 @@ class Vendor {
      */
     boolean setDescription(String name, String description){
         Item item = stock.get(name);
-        if(item==null){
+        if (item == null){
             return false;
         }
         item.description = description;
@@ -110,49 +116,131 @@ class Vendor {
 
     /**
      * Returns a one-line summary of an item for a customer to read before purchasing.
-     *
+     * e.g. "Candy - $1.25 - 10 in stock - A sweet chocolate treat."
      * @throws IllegalArgumentException if the vendor doesn't carry the item.
      */
     String getItemDetails(String name){
         Item item = findItem(name);
-        return String.format("%s - $%.2f - %d in stock - %s", name, item.price, item.stock, item.description);
+        return String.format("%s - $%.2f - %d in stock - %s", name, item.getSalePrice(), item.stock, item.description);
+    }
+
+    /**
+     * Returns the named item's category
+     *
+     * @throws IllegalArgumentException if the vendor doesn't carry the item.
+     */
+    String getCategory(String name){
+        return findItem(name).category;
+    }
+
+    /**
+     * Puts the named item in a category, such as 'snacks' or 'drinks'
+     *
+     * @return true if updated, false if the vendor doesn't carry the item.
+     */
+    boolean setCategory(String name, String category){
+        Item item = stock.get(name);
+        if(item==null){
+            return false;
+        }
+        item.category = category;
+        return true;
+    }
+
+    /**
+     * Puts one item on sale. A discount replaces any earlier one.
+     *
+     * @param name the item to discount
+     * @param percent how much to take off, from 0-100.
+     * @return true if the discount was applied, false if the vendor does not carry that item.
+     * @throws IllegalArgumentException if the percent is outside 0 to 100.
+     */
+    boolean applyDiscount(String name, int percent){
+        checkPercent(percent);
+        Item item = stock.get(name);
+        if(item==null){
+            return false;
+        }
+        item.discountPercent = percent;
+        return true;
+    }
+
+    /**
+     * Puts every item in a category on sale.
+     *
+     * @param category the category to dicount
+     * @param percent how much to take off, from 0-100.
+     * @return how many items were discounted
+     * @throws IllegalArgumentException if the percent is outside 0-100.
+     */
+    int applyCategoryDiscount(String category, int percent){
+        checkPercent(percent);
+        int count = 0;
+        for(Item item : stock.values()){
+            if(item.category.equals(category)){
+                item.discountPercent = percent;
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * Ends the sale on an item so it goes back to full price
+     *
+     * @return true if updated, false if the vendor does not carry the item.
+     */
+    boolean removeDiscount(String name){
+        return applyDiscount(name, 0);
+    }
+
+    // throws an exception if a discount percentage isn't b/w 0-100.
+    private void checkPercent(int percent){
+        if(percent < 0 || percent > 100){
+            throw new IllegalArgumentException("Discount must be between 0 and 100 percent");
+        }
     }
 
     // looks up an item, throwing an exception if the vendor doesn't carry the item.
     private Item findItem(String name){
         Item item = stock.get(name);
-        if(item==null){
+        if (item == null){
             throw new IllegalArgumentException("Unknown item: " + name);
         }
         return item;
     }
 
+
     /**
-     * attempt to purchase named item. A message is printed if the vendor
-     * does not carry the item or the balance isn't enough to cover its cost.
+     * Attempts to purchase the named item. A message is printed if the
+     * vendor does not carry the item, the item is sold out, or the balance isn't enough to cover its cost.
      *
-     * @param name The name of the item to purchase ("Candy" or "Gum")
+     * @param name the name of the item to purchase (e.g. "Candy" or "Gum")
      * @return true if the purchase went through, false otherwise
      */
-    boolean select(String name) {
+    boolean select(String name){
         Item item = stock.get(name);
-        if(item == null){
-            System.out.println("Sorry, don't know that item.");
+        if (item == null){
+            System.out.println("Sorry, don't know that item");
             return false;
         }
-        if(item.stock <= 0){
-            System.out.println("Sorry " + name + " is sold out");
+        // Without this check, stock could go negative on an empty vendor
+        if (item.stock <= 0){
+            System.out.println("Sorry, " + name + " is sold out");
             return false;
         }
-        if (balance < item.price) {
-            System.out.println("Gimme more money.");
+        // includes any discount
+        double cost = item.getSalePrice();
+        if (balance < cost){
+            System.out.println("Gimme more money");
             return false;
         }
         item.purchase(1);
-        this.balance = this.balance - item.price;
+        this.balance = this.balance - cost;
         return true;
-
     }
+
+
     /**
      * Adds more pieces of an item the vendor already carries.
      *
@@ -161,12 +249,12 @@ class Vendor {
      * @return true if the item was restocked, false if the vendor does not carry it
      * @throws IllegalArgumentException if amount is zero or negative
      */
-    boolean restock(String name, int amount) {
-        if (amount <= 0) {
+    boolean restock(String name, int amount){
+        if (amount <= 0){
             throw new IllegalArgumentException("Restock amount must be positive");
         }
         Item item = stock.get(name);
-        if (item == null) {
+        if (item == null){
             return false;
         }
         item.restock(amount);
@@ -257,18 +345,20 @@ class Vendor {
     }
 
 
-    /**
-     * Builds a printable list of this vendor's items, sorted by name.
-     */
-    String getInventoryReport() {
+    // Builds a printable list of this vendor's items, sorted by name.
+    String getInventoryReport(){
         StringBuilder report = new StringBuilder("=== " + name + " ===" + System.lineSeparator());
-        if(stock.isEmpty()){
+        if (stock.isEmpty()){
             report.append("(no items)").append(System.lineSeparator());
         }
         for (Map.Entry<String, Item> entry : stock.entrySet()){
             Item item = entry.getValue();
-            report.append(String.format("%s: %d in stock @ $%.2f%n",
-                    entry.getKey(), item.stock, item.price));
+            report.append(String.format("%s: %d in stock @ $%.2f",
+                    entry.getKey(), item.stock, item.getSalePrice()));
+            if (item.discountPercent > 0){
+                report.append(" (").append(item.discountPercent).append("% off)");
+            }
+            report.append(System.lineSeparator());
         }
         return report.toString();
     }
@@ -282,18 +372,18 @@ class Vendor {
      * @param price the price for a new item (an existing item keeps its current price)
      * @throws IllegalArgumentException if the name is blank, or amount or price is not positive
      */
-    void restock(String name, int amount, double price) {
+    void restock(String name, int amount, double price){
         // Validate everything before changing the inventory
-        if (name == null || name.isBlank()) {
+        if (name == null || name.isBlank()){
             throw new IllegalArgumentException("Item name must not be blank");
         }
-        if (amount <= 0) {
+        if (amount <= 0){
             throw new IllegalArgumentException("Restock amount must be positive");
         }
-        if (price <= 0) {
+        if (price <= 0){
             throw new IllegalArgumentException("Price must be positive");
         }
-        if (!stock.containsKey(name)) {
+        if (!stock.containsKey(name)){
             stock.put(name, new Item(price, 0));
         }
         stock.get(name).restock(amount);

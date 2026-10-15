@@ -353,7 +353,7 @@ public class VendorTest {
     @Test
     void starterItemDescriptionsCheck(){
         assertEquals("A sweet chocolate treat.", vendor.getDescription("Candy"));
-        assertEquals("Chewy mint gum that freshens your breath", vendor.getDescription("Gum"));
+        assertEquals("Chewy mint gum that freshens your breath.", vendor.getDescription("Gum"));
     }
 
     @Test
@@ -382,6 +382,72 @@ public class VendorTest {
     void detailsOfUnknownItemThrows(){
         assertThrows(IllegalArgumentException.class, () -> vendor.getItemDetails("Chips"));
         assertThrows(IllegalArgumentException.class, () -> vendor.getDescription("Chips"));
+    }
+
+    // Story: discounts on item and categories
+    @Test
+    void itemsHaveCategories(){
+        assertEquals("Snacks", vendor.getCategory("Candy"));
+        vendor.restock("Soda", 4,2.00);
+        //default for new items
+        assertEquals("General", vendor.getCategory("Soda"));
+        assertTrue(vendor.setCategory("Soda", "Drinks"));
+        assertEquals("Drinks", vendor.getCategory("Soda"));
+    }
+
+    @Test
+    void discountLowersItemPrice(){
+        assertTrue(vendor.applyDiscount("Candy", 20));
+        assertEquals(1.00, vendor.getPrice("Candy"), DELTA);
+    }
+
+    @Test
+    void purchaseChargesDiscountedPrice(){
+        vendor.applyDiscount("Candy", 20);
+        vendor.addMoney(1.00);
+        //not enough at full price
+        assertTrue(vendor.select("Candy"));
+        assertEquals(0, vendor.getBalance(), DELTA);
+    }
+
+    @Test
+    void categoryDiscountOnlyAffectsThatCategory(){
+        vendor.restock("Soda", 4, 2.00);
+        vendor.setCategory("Soda", "Drinks");
+        assertEquals(2, vendor.applyCategoryDiscount("Snacks", 50));
+        // Candy and Gum
+        assertEquals(0.625, vendor.getPrice("Candy"), DELTA);
+        assertEquals(0.25, vendor.getPrice("Gum"), DELTA);
+        assertEquals(2.00, vendor.getPrice("Soda"), DELTA);
+        // unchanged
+    }
+
+    @Test
+    void removeDiscountRestoresPrice(){
+        vendor.applyDiscount("Gum", 50);
+        assertTrue(vendor.removeDiscount("Gum"));
+        assertEquals(0.50, vendor.getPrice("Gum"), DELTA);
+    }
+
+    @Test
+    void invalidDiscountRejection(){
+        assertThrows(IllegalArgumentException.class, () -> vendor.applyDiscount("Candy", -10));
+        assertThrows(IllegalArgumentException.class, () -> vendor.applyDiscount("Candy", 150));
+        assertThrows(IllegalArgumentException.class, () -> vendor.applyCategoryDiscount("Snacks", 101));
+        assertEquals(1.25, vendor.getPrice("Candy"), DELTA);
+    }
+
+    @Test
+    void discountOnUnknownCheck(){
+        assertFalse(vendor.applyDiscount("Chips", 10));
+        assertEquals(0, vendor.applyCategoryDiscount("Drinks", 10));
+    }
+
+    @Test
+    void discountShowsInReportAndDetails(){
+        vendor.applyDiscount("Candy", 20);
+        assertTrue(vendor.getInventoryReport().contains("Candy: 10 in stock @ $1.00 (20% off)"));
+        assertTrue(vendor.getItemDetails("Candy").startsWith("Candy - $1.00"));
     }
 
 }
