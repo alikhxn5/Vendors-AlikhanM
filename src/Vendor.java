@@ -61,12 +61,16 @@ class Vendor {
      * does not carry the item or the balance isn't enough to cover its cost.
      *
      * @param name The name of the item to purchase ("Candy" or "Gum")
-     * @return true if the purchase went through
+     * @return true if the purchase went through, false otherwise
      */
     boolean select(String name) {
         Item item = stock.get(name);
         if(item == null){
             System.out.println("Sorry, don't know that item.");
+            return false;
+        }
+        if(item.stock <= 0){
+            System.out.println("Sorry " + name + " is sold out");
             return false;
         }
         if (balance < item.price) {

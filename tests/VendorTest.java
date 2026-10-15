@@ -1,5 +1,4 @@
-import org.junit.
-        jupiter.api.Test;
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -87,4 +86,44 @@ public class VendorTest {
         assertFalse(vendor.select("Chips"));
         assertEquals(5.00, vendor.getBalance(), DELTA);
     }
+
+    @Test
+    void buyingEveryItemEmptiesInventory() {
+        vendor.addMoney(10 * 1.25 + 5 * 0.50);  // exactly enough for everything
+        for (int i = 0; i < 10; i++) {
+            assertTrue(vendor.select("Candy"));
+        }
+        for (int i = 0; i < 5; i++) {
+            assertTrue(vendor.select("Gum"));
+        }
+        assertEquals(0, vendor.getStock("Candy"));
+        assertEquals(0, vendor.getStock("Gum"));
+        assertEquals(0, vendor.getBalance(), DELTA);
+    }
+
+    @Test
+    void cantBuyItemSoldOut(){
+        vendor.addMoney(20.00);
+        for(int i = 0; i < 5; i++){
+            vendor.select("Gum");
+        }
+        //6th Gum: none left....
+        assertFalse(vendor.select("Gum"));
+
+        //stock never goes negative
+        assertEquals(0, vendor.getStock("Gum"));
+
+        // only charged for 5 gum
+        assertEquals(17.50, vendor.getBalance(), DELTA);
+    }
+
+    @Test
+    void emptyVendorRefusesAllPurchases() {
+        Vendor empty = new Vendor(0, 0);
+        empty.addMoney(5.00);
+        assertFalse(empty.select("Candy"));
+        assertFalse(empty.select("Gum"));
+        assertEquals(5.00, empty.getBalance(), DELTA);
+    }
+
 }
