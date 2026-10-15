@@ -121,6 +121,27 @@ class Vendor {
     }
 
     /**
+     * Renames an item. Its stock, price, and other data move with it to the new name.
+     *
+     * @param oldName the item's current name
+     * @param newName the name to use from now on
+     * @return true if renamed; false if the old name is unknown, or the new name is blank
+     * or already used by another item
+     */
+    boolean renameItem(String oldName, String newName){
+        if(newName == null || newName.isBlank()){
+            return false;
+        }
+
+        // Refuse overwriting of item that already has the new name
+        if(!stock.containsKey(oldName) || stock.containsKey(newName)){
+            return false;
+        }
+        stock.put(newName, stock.remove(oldName));
+        return true;
+    }
+
+    /**
      * Restocks an item, first adding it to the inventory if the vendor
      * does not carry it yet. This lets the inventory change over time.
      *

@@ -197,4 +197,41 @@ public class VendorTest {
         assertThrows(IllegalArgumentException.class, () -> vendor.getPrice("Chips"));
     }
 
+    // story: rename an item
+    @Test
+    void renameItemKeepsDetails(){
+        assertTrue(vendor.renameItem("Candy", "Chocolate Bar"));
+        assertFalse(vendor.hasItem("Candy"));
+        assertTrue(vendor.hasItem("Chocolate Bar"));
+        assertEquals(10, vendor.getStock("Chocolate Bar"));
+        assertEquals(1.25, vendor.getPrice("Chocolate Bar"), DELTA);
+    }
+
+    @Test
+    void renamedBoughtbyName(){
+        vendor.renameItem("Gum", "Mint Gum");
+        vendor.addMoney(1.00);
+        assertFalse(vendor.select("Gum"));
+        assertTrue(vendor.select("Mint Gum"));
+    }
+
+    @Test
+    void renamedUnknownFail(){
+        assertFalse(vendor.renameItem("Chips", "Crisps"));
+        assertFalse(vendor.hasItem("Crisps"));
+    }
+
+    @Test
+    void renameToExistingNameFailsNoOverwriting(){
+        assertFalse(vendor.renameItem("Candy", "Gum"));
+        assertEquals(10, vendor.getStock("Candy"));
+        assertEquals(5, vendor.getStock("Gum"));
+    }
+
+    @Test
+    void renameToBlankFails(){
+        assertFalse(vendor.renameItem("Candy", "   "));
+        assertTrue(vendor.hasItem("Candy"));
+    }
+
 }
