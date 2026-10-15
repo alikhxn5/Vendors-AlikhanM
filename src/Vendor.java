@@ -1,3 +1,5 @@
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
@@ -166,14 +168,61 @@ class Vendor {
         return stock.remove(name)!=null;
     }
 
+    /**
+     * Returns how many pieces of the named item have been sold.
+     *
+     * @return the number sold, or 0 if this vendor doesn't carry the item
+     */
+    int getPurchaseCount(String name){
+        Item item = stock.get(name);
+        return item == null ? 0: item.purchaseCount;
+    }
+
+    // returns the total number of pieces sold across all items.
+    int getTotalPurchases(){
+        int total = 0;
+        for(Item item : stock.values()){
+            total = total+item.purchaseCount;
+        }
+        return total;
+    }
 
     /**
-     * Builds a printable list of this vendor's items, sorted by name. Example:
-     * <pre>
-     * === Vendor 1 ===
-     * Candy: 10 in stock @ $1.25
-     * Gum: 5 in stock @ $0.50
-     * </pre>
+     * Returns the item that has sold the most pieces.
+     * If two items are tied, the one that comes first alphabetically wins.
+     *
+     * @return the most popular item's name, or null if nothing has sold yet
+     */
+    String getMostPopularItem(){
+        String mostPopular = null;
+        int highestCount = 0;
+        for(Map.Entry<String, Item> entry : stock.entrySet()){
+            if(entry.getValue().purchaseCount > highestCount){
+                mostPopular = entry.getKey();
+                highestCount = entry.getValue().purchaseCount;
+            }
+        }
+        return mostPopular;
+    }
+
+
+    /**
+     * Returns every item ordered from the most sold to the least (showing trending items).
+     * Items with the same count stay in alphabetical order.
+     *
+     */
+    List<String> getItemsByPop(){
+        List<String> names = new ArrayList<>(stock.keySet());
+        //starts alphabetically
+
+        // List.sort keeps the ties alphabetical order
+        names.sort((a, b) -> Integer.compare(stock.get(b).purchaseCount, stock.get(a).purchaseCount));
+        return names;
+    }
+
+
+    /**
+     * Builds a printable list of this vendor's items, sorted by name.
      */
     String getInventoryReport() {
         StringBuilder report = new StringBuilder("=== " + name + " ===" + System.lineSeparator());

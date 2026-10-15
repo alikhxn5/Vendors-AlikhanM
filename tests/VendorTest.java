@@ -1,5 +1,9 @@
 import org.junit.jupiter.api.Test;
+
+import java.util.List;
 import org.junit.jupiter.api.BeforeEach;
+
+
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -284,6 +288,65 @@ public class VendorTest {
         vendor.removeItem("Candy");
         vendor.removeItem("Gum");
         assertTrue(vendor.getInventoryReport().contains("(no items)"));
+    }
+
+    // Story: track customer purchases
+    @Test
+    void purchaseCtStartsAtZero(){
+        assertEquals(0, vendor.getPurchaseCount("Candy"));
+        assertEquals(0, vendor.getTotalPurchases());
+    }
+
+    @Test
+    void eachSuccessfulPurchaseCounted(){
+        vendor.addMoney(5.00);
+        vendor.select("Candy");
+        vendor.select("Candy");
+        vendor.select("Gum");
+        assertEquals(2, vendor.getPurchaseCount("Candy"));
+        assertEquals(1, vendor.getPurchaseCount("Gum"));
+        assertEquals(3, vendor.getTotalPurchases());
+    }
+
+    @Test
+    void failedPurchasesNotCounted(){
+        vendor.addMoney(0.25);
+        // not enough money here
+        vendor.select("Candy");
+        assertEquals(0, vendor.getPurchaseCount("Candy"));
+    }
+
+    @Test
+    void mostPopItemEqualsBestSeller(){
+        vendor.addMoney(5.00);
+        vendor.select("Gum");
+        vendor.select("Gum");
+        vendor.select("Candy");
+        assertEquals("Gum", vendor.getMostPopularItem());
+    }
+
+    @Test
+    void mostPopItemIsNullBeforeSales(){
+        assertNull(vendor.getMostPopularItem());
+    }
+
+    @Test
+    void itemsByPopOrderedHiToLow(){
+        vendor.restock("Chips", 5, 1.00);
+        vendor.addMoney(10.00);
+        vendor.select("Chips");
+        vendor.select("Chips");
+        vendor.select("Chips");
+        vendor.select("Gum");
+        assertEquals(List.of("Chips", "Gum", "Candy"), vendor.getItemsByPop());
+    }
+
+    @Test
+    void purchaseHistoryTracksRenames(){
+        vendor.addMoney(1.25);
+        vendor.select("Candy");
+        vendor.renameItem("Candy", "Chocolate");
+        assertEquals(1, vendor.getPurchaseCount("Chocolate"));
     }
 
 }
