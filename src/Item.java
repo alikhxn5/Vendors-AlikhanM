@@ -1,10 +1,12 @@
 /**
- * An item sold by a vendor, with its price, how many are in stock,how many have been sold, a description customers can
- * read, and a category and discount used for sales and promotions.
+ * An item sold by a vendor, with its price, how many are in stock, how many have
+ * been sold, a description customers can read, a category and discount used for sales
+ * and promotions, and whether it is marked as a bestseller.
  */
 class Item{
     static final String DEFAULT_DESCRIPTION = "No description available.";
     static final String DEFAULT_CATEGORY = "General";
+
     // full price, before any discount
     double price;
     int stock;
@@ -13,10 +15,11 @@ class Item{
     int purchaseCount;
     String description;
     String category;
-    int discountPercent;
-
 
     // 0 means no discount, 25 means 25% off
+    int discountPercent;
+    boolean bestseller;
+
     Item(double price, int numPieces){
         this(price, numPieces, DEFAULT_DESCRIPTION);
     }
@@ -32,7 +35,7 @@ class Item{
         this.category = category;
     }
 
-    //returns the price a customer pays right now, after any discount
+    // returns the price a customer pays right now, after any discount
     double getSalePrice(){
         return price * (100 - discountPercent) / 100.0;
     }

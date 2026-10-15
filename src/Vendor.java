@@ -194,6 +194,71 @@ class Vendor{
         return applyDiscount(name, 0);
     }
 
+    /**
+     * Marks an item as a Bestseller
+     *
+     * @return true if marked, false if the vendor doesn't carry the item
+     */
+    boolean markBestseller(String name){
+        return setBestseller(name, true);
+    }
+
+    /**
+     * Removes the Bestseller mark from an item
+     *
+     * @return true if updated, false if the vendor doesn't carry the item.
+     */
+    boolean unmarkBestseller(String name){
+        return setBestseller(name, false);
+    }
+
+    // returns true if the named item is marked as a Bestseller (false if not carried by the vendor).
+    boolean isBestseller(String name){
+        Item item = stock.get(name);
+        return item != null && item.bestseller;
+    }
+
+     // Returns the names of all bestsellers in a-b order, giving quick access to the most commonly purchased items.
+    List<String>getBestsellers(){
+        // was stuck on this for a minute, ended up using google along with claude ai to help out with logic.
+        List<String> bestsellers = new ArrayList<>();
+        for (Map.Entry<String, Item> entry: stock.entrySet()){
+            if(entry.getValue().bestseller){
+                bestsellers.add(entry.getKey());
+            }
+        }
+        return bestsellers;
+    }
+
+    /**
+     * Uses the purchase history to mark the top-selling items as bestsellers.
+     * Items that have never sold are skipped and existing marks are kept.
+     *
+     * @param howMany how many of the top sellers to mark
+     */
+    void markTopSellers(int howMany){
+        List<String> byPopularity = getItemsByPop();
+        for(int i = 0; i < howMany && i< byPopularity.size(); i++){
+            Item item = stock.get(byPopularity.get(i));
+            if(item.purchaseCount == 0){
+                // bc the rest of the list has no sales either
+                break;
+            }
+            item.bestseller = true;
+        }
+    }
+
+    // sets or clears the bestseller mark
+    // returns false if the item is not carried by the vendor.
+    private boolean setBestseller(String name, boolean value){
+        Item item = stock.get(name);
+        if(item == null){
+            return false;
+        }
+        item.bestseller = value;
+        return true;
+    }
+
     // throws an exception if a discount percentage isn't b/w 0-100.
     private void checkPercent(int percent){
         if(percent < 0 || percent > 100){
@@ -357,6 +422,9 @@ class Vendor{
                     entry.getKey(), item.stock, item.getSalePrice()));
             if (item.discountPercent > 0){
                 report.append(" (").append(item.discountPercent).append("% off)");
+            }
+            if(item.bestseller){
+                report.append(" [Bestseller]");
             }
             report.append(System.lineSeparator());
         }

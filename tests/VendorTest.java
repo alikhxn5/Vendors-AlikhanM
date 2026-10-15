@@ -450,6 +450,58 @@ public class VendorTest {
         assertTrue(vendor.getItemDetails("Candy").startsWith("Candy - $1.00"));
     }
 
+    @Test
+    void itemsDefaultNotBestseller(){
+        assertFalse(vendor.isBestseller("Candy"));
+        assertTrue(vendor.getBestsellers().isEmpty());
+    }
+
+    @Test
+    void markBestsellerFlagsItem(){
+        assertTrue(vendor.markBestseller("Gum"));
+        assertTrue(vendor.isBestseller("Gum"));
+        assertEquals(List.of("Gum"), vendor.getBestsellers());
+    }
+
+    @Test
+    void unmarkBestsellerClearsFlag(){
+        vendor.markBestseller("Gum");
+        assertTrue(vendor.unmarkBestseller("Gum"));
+        assertFalse(vendor.isBestseller("Gum"));
+        assertTrue(vendor.getBestsellers().isEmpty());
+    }
+
+    @Test
+    void markingUnknownItemFails(){
+        assertFalse(vendor.markBestseller("Chips"));
+        assertFalse(vendor.isBestseller("Chips"));
+    }
+
+    @Test
+    void topSellersPurchaseHistoryMark(){
+        vendor.restock("Chips", 5, 1.00);
+        vendor.addMoney(10.00);
+        vendor.select("Chips");
+        vendor.select("Chips");
+        vendor.select("Gum");
+        vendor.markTopSellers(2);
+        assertEquals(List.of("Chips", "Gum"), vendor.getBestsellers());
+        assertFalse(vendor.isBestseller("Candy"));
+    }
+
+    @Test
+    void itemsNoSalesNotMarkedBestseller(){
+        vendor.markTopSellers(3);
+        assertTrue(vendor.getBestsellers().isEmpty());
+    }
+
+    @Test
+    void bestsellerTagShowsInInv(){
+        vendor.markBestseller("Candy");
+        assertTrue(vendor.getInventoryReport().contains("Candy: 10 in stock @ $1.25 [Bestseller]"));
+        assertFalse(vendor.getInventoryReport().contains("Gum: 5 in stock @ $0.50 [Bestseller]"));
+    }
+
 }
 
 
