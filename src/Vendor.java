@@ -56,6 +56,24 @@ class Vendor {
         return item == null ? 0 : item.stock;
     }
 
+    // returns true if this vendor carries the named item
+     boolean hasItem(String name){
+        return stock.containsKey(name);
+     }
+
+    /**
+     * Returns the price of the named item
+     *
+     * @throws IllegalArgumentException if the vendor does not carry the item
+     */
+    double getPrice(String name){
+        Item item = stock.get(name);
+        if(item == null){
+            throw new IllegalArgumentException("Unknown item: " + name);
+        }
+        return item.price;
+    }
+
     /**
      * attempt to purchase named item. A message is printed if the vendor
      * does not carry the item or the balance isn't enough to cover its cost.
@@ -82,26 +100,52 @@ class Vendor {
         return true;
 
     }
-
     /**
-     * Adds amount of an item the vendor already carries
+     * Adds more pieces of an item the vendor already carries.
      *
      * @param name the item to restock
-     * @param amount how many pieces to add (+ #)
-     * @return true if the item restocked, false if not carried by Vendor
-     * @throws IllegalArgumentException if amt is 0 or negative
+     * @param amount how many pieces to add (must be positive)
+     * @return true if the item was restocked, false if the vendor does not carry it
+     * @throws IllegalArgumentException if amount is zero or negative
      */
-    boolean restock(String name, int amount){
-        if(amount <= 0){
+    boolean restock(String name, int amount) {
+        if (amount <= 0) {
             throw new IllegalArgumentException("Restock amount must be positive");
         }
         Item item = stock.get(name);
-        if(item == null){
+        if (item == null) {
             return false;
         }
         item.restock(amount);
         return true;
     }
+
+    /**
+     * Restocks an item, first adding it to the inventory if the vendor
+     * does not carry it yet. This lets the inventory change over time.
+     *
+     * @param name the item to restock
+     * @param amount how many pieces to add (must be positive)
+     * @param price the price for a new item (an existing item keeps its current price)
+     * @throws IllegalArgumentException if the name is blank, or amount or price is not positive
+     */
+    void restock(String name, int amount, double price) {
+        // Validate everything before changing the inventory
+        if (name == null || name.isBlank()) {
+            throw new IllegalArgumentException("Item name must not be blank");
+        }
+        if (amount <= 0) {
+            throw new IllegalArgumentException("Restock amount must be positive");
+        }
+        if (price <= 0) {
+            throw new IllegalArgumentException("Price must be positive");
+        }
+        if (!stock.containsKey(name)) {
+            stock.put(name, new Item(price, 0));
+        }
+        stock.get(name).restock(amount);
+    }
 }
+
 
 

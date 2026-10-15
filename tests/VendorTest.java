@@ -157,4 +157,44 @@ public class VendorTest {
         assertFalse(vendor.restock("Chips", 5));
         assertEquals(0, vendor.getStock("Chips"));
     }
+
+    // Story: restocking adds unavailable items
+    @Test
+    void restockAddsNewItemToInventory(){
+        assertFalse(vendor.hasItem("Chips"));
+        vendor.restock("Chips", 8, 1.50);
+        assertTrue(vendor.hasItem("Chips"));
+        assertEquals(8, vendor.getStock("Chips"));
+        assertEquals(1.50, vendor.getPrice("Chips"), DELTA);
+    }
+
+    @Test
+    void newlyStockedItemPurchasable(){
+        vendor.restock("Chips", 2, 1.50);
+        vendor.addMoney(1.50);
+        assertTrue(vendor.select("Chips"));
+        assertEquals(1, vendor.getStock("Chips"));
+    }
+
+    @Test
+    void restockWPriceOnExistingItemKeepsOGPrice(){
+        vendor.restock("Candy", 5, 9.99);
+        assertEquals(15, vendor.getStock("Candy"));
+        assertEquals(1.25, vendor.getPrice("Candy"), DELTA);
+
+    }
+
+    @Test
+    void restockNewItemRejectInvalidInput(){
+        assertThrows(IllegalArgumentException.class, () -> vendor.restock("Chips", 5, 0));
+        assertThrows(IllegalArgumentException.class, () -> vendor.restock("Chips", 0, 1.50));
+        assertThrows(IllegalArgumentException.class, () -> vendor.restock(" ", 5, 1.50));
+        assertFalse(vendor.hasItem("Chips"));   // nothing was added
+    }
+
+    @Test
+    void getPriceOfUnknownItemThrows() {
+        assertThrows(IllegalArgumentException.class, () -> vendor.getPrice("Chips"));
+    }
+
 }
