@@ -1,20 +1,35 @@
-import java.util.HashMap;
 import java.util.Map;
+import java.util.TreeMap;
 
 
 /**
- * Class for a Vending Machine.  Contains a hashtable mapping item names to item data, as
- * well as the current balance of money that has been deposited into the machine.
+ * Class for an NPC vendor (a vending machine). Contains a map from item names to
+ * item data, as well as the current balance of money that has been deposited into the machine.
  */
 class Vendor {
-    // Each vendor has its own inventory. (fixed)
-    private final Map<String, Item> stock = new HashMap<>();
+    // Each vendor has its own inventory. In the starter code this map was static,
+    // so every vendor shared (and overwrote) the same stock.
+    // A TreeMap keeps the items sorted by name, so printed inventories are predictable.
+    private final Map<String, Item> stock = new TreeMap<>();
+    private final String name;
     private double balance;
 
+    /** creates a vendor named "Vendor" with the given amounts of Candy and Gum */
     Vendor(int numCandy, int numGum) {
+        this("Vendor", numCandy, numGum);
+    }
+
+    /** creates a named vendor with the given amounts of Candy and Gum */
+    Vendor(String name, int numCandy, int numGum) {
+        this.name = name;
         stock.put("Candy", new Item(1.25, numCandy));
         stock.put("Gum", new Item(.5, numGum));
         this.balance = 0;
+    }
+
+    /** returns this vendor's name */
+    String getName() {
+        return name;
     }
 
     /**
@@ -139,6 +154,23 @@ class Vendor {
         }
         stock.put(newName, stock.remove(oldName));
         return true;
+    }
+    /**
+     * Builds a printable list of this vendor's items, sorted by name. Example:
+     * <pre>
+     * === Vendor 1 ===
+     * Candy: 10 in stock @ $1.25
+     * Gum: 5 in stock @ $0.50
+     * </pre>
+     */
+    String getInventoryReport() {
+        StringBuilder report = new StringBuilder("=== " + name + " ===" + System.lineSeparator());
+        for (Map.Entry<String, Item> entry : stock.entrySet()) {
+            Item item = entry.getValue();
+            report.append(String.format("%s: %d in stock @ $%.2f%n",
+                    entry.getKey(), item.stock, item.price));
+        }
+        return report.toString();
     }
 
     /**

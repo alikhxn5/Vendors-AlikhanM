@@ -234,4 +234,19 @@ public class VendorTest {
         assertTrue(vendor.hasItem("Candy"));
     }
 
+    // story: manage and print vendors
+    @Test
+    void vendorKeepsName(){
+        Vendor named = new Vendor("Vendor 7", 1, 1);
+        assertEquals("Vendor 7", named.getName());
+    }
+
+    @Test
+    void inventoryReportListsAtoB(){
+        vendor.restock("Apple", 3, 0.75);
+        String report = vendor.getInventoryReport();
+        assertTrue(report.indexOf("Apple") < report.indexOf("Candy"));
+        assertTrue(report.indexOf("Candy") < report.indexOf("Gum"));
+    }
+
 }
