@@ -126,4 +126,35 @@ public class VendorTest {
         assertEquals(5.00, empty.getBalance(), DELTA);
     }
 
+    @Test
+    void restockAddsToExistingItem() {
+        assertTrue(vendor.restock("Gum", 20));
+        assertEquals(25, vendor.getStock("Gum"));
+    }
+
+    @Test
+    void restockedItemBuyPostSellOut(){
+        Vendor empty = new Vendor(0,0);
+        empty.addMoney(1.25);
+        // sold out
+        assertFalse(empty.select("Candy"));
+
+        empty.restock("Candy", 3);
+        // available again
+        assertTrue(empty.select("Candy"));
+        assertEquals(2, empty.getStock("Candy"));
+    }
+
+    @Test
+    void restockRejectZeroNegativeAmt(){
+        assertThrows(IllegalArgumentException.class, () -> vendor.restock("Candy", 0));
+        assertThrows(IllegalArgumentException.class, () -> vendor.restock("Candy", -4));
+        assertEquals(10, vendor.getStock("Candy"));
+    }
+
+    @Test
+    void restockUnknownItemWithoutPriceFails() {
+        assertFalse(vendor.restock("Chips", 5));
+        assertEquals(0, vendor.getStock("Chips"));
+    }
 }

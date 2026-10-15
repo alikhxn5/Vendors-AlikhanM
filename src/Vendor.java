@@ -81,7 +81,26 @@ class Vendor {
         this.balance = this.balance - item.price;
         return true;
 
+    }
 
+    /**
+     * Adds amount of an item the vendor already carries
+     *
+     * @param name the item to restock
+     * @param amount how many pieces to add (+ #)
+     * @return true if the item restocked, false if not carried by Vendor
+     * @throws IllegalArgumentException if amt is 0 or negative
+     */
+    boolean restock(String name, int amount){
+        if(amount <= 0){
+            throw new IllegalArgumentException("Restock amount must be positive");
+        }
+        Item item = stock.get(name);
+        if(item == null){
+            return false;
+        }
+        item.restock(amount);
+        return true;
     }
 }
 
