@@ -1,5 +1,5 @@
 public class Main {
-    public static void main(String[] args){
+    public static void main(String[] args) {
         System.out.println("Welcome to Amazing Bruin Shop!");
 
         // Five vendors, each starting with 10 Candy and 5 Gum

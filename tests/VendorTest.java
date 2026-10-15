@@ -1,14 +1,11 @@
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
-
-
 
 import static org.junit.jupiter.api.Assertions.*;
 
 public class VendorTest {
-
     private static final double DELTA = 0.001;
 
     private Vendor vendor;
@@ -276,7 +273,7 @@ public class VendorTest {
 
 
     @Test
-    void removedItemNotInReport(){
+    void removedItemNotInReport() {
         vendor.removeItem("Gum");
         String report = vendor.getInventoryReport();
         assertFalse(report.contains("Gum"));
@@ -284,7 +281,7 @@ public class VendorTest {
     }
 
     @Test
-    void removingEveryItemShowsEmptyInv(){
+    void removingEveryItemShowsEmptyInv() {
         vendor.removeItem("Candy");
         vendor.removeItem("Gum");
         assertTrue(vendor.getInventoryReport().contains("(no items)"));
@@ -292,13 +289,13 @@ public class VendorTest {
 
     // Story: track customer purchases
     @Test
-    void purchaseCtStartsAtZero(){
+    void purchaseCtStartsAtZero() {
         assertEquals(0, vendor.getPurchaseCount("Candy"));
         assertEquals(0, vendor.getTotalPurchases());
     }
 
     @Test
-    void eachSuccessfulPurchaseCounted(){
+    void eachSuccessfulPurchaseCounted() {
         vendor.addMoney(5.00);
         vendor.select("Candy");
         vendor.select("Candy");
@@ -309,7 +306,7 @@ public class VendorTest {
     }
 
     @Test
-    void failedPurchasesNotCounted(){
+    void failedPurchasesNotCounted() {
         vendor.addMoney(0.25);
         // not enough money here
         vendor.select("Candy");
@@ -317,7 +314,7 @@ public class VendorTest {
     }
 
     @Test
-    void mostPopItemEqualsBestSeller(){
+    void mostPopItemEqualsBestSeller() {
         vendor.addMoney(5.00);
         vendor.select("Gum");
         vendor.select("Gum");
@@ -326,12 +323,12 @@ public class VendorTest {
     }
 
     @Test
-    void mostPopItemIsNullBeforeSales(){
+    void mostPopItemIsNullBeforeSales() {
         assertNull(vendor.getMostPopularItem());
     }
 
     @Test
-    void itemsByPopOrderedHiToLow(){
+    void itemsByPopOrderedHiToLow() {
         vendor.restock("Chips", 5, 1.00);
         vendor.addMoney(10.00);
         vendor.select("Chips");
@@ -342,7 +339,7 @@ public class VendorTest {
     }
 
     @Test
-    void purchaseHistoryTracksRenames(){
+    void purchaseHistoryTracksRenames() {
         vendor.addMoney(1.25);
         vendor.select("Candy");
         vendor.renameItem("Candy", "Chocolate");
@@ -351,44 +348,44 @@ public class VendorTest {
 
     // Story: check item details before buying
     @Test
-    void starterItemDescriptionsCheck(){
+    void starterItemDescriptionsCheck() {
         assertEquals("A sweet chocolate treat.", vendor.getDescription("Candy"));
         assertEquals("Chewy mint gum that freshens your breath.", vendor.getDescription("Gum"));
     }
 
     @Test
-    void newItemsGetDefaultDescriptions(){
+    void newItemsGetDefaultDescriptions() {
         vendor.restock("Chips", 3, 1.50);
         assertEquals("No description available.", vendor.getDescription("Chips"));
     }
 
     @Test
-    void setDescriptionUpdatesItems(){
+    void setDescriptionUpdatesItems() {
         assertTrue(vendor.setDescription("Gum", "Bubble gum. Blows big bubbles."));
         assertEquals("Bubble gum. Blows big bubbles.", vendor.getDescription("Gum"));
     }
 
     @Test
-    void setDescriptionOnUnknownFail(){
+    void setDescriptionOnUnknownFail() {
         assertFalse(vendor.setDescription("Chips", "Salty and crunch."));
     }
 
     @Test
-    void itemDetailsShowPriceStockNDescription(){
+    void itemDetailsShowPriceStockNDescription() {
         assertEquals("Candy - $1.25 - 10 in stock - A sweet chocolate treat.", vendor.getItemDetails("Candy"));
     }
 
     @Test
-    void detailsOfUnknownItemThrows(){
+    void detailsOfUnknownItemThrows() {
         assertThrows(IllegalArgumentException.class, () -> vendor.getItemDetails("Chips"));
         assertThrows(IllegalArgumentException.class, () -> vendor.getDescription("Chips"));
     }
 
     // Story: discounts on item and categories
     @Test
-    void itemsHaveCategories(){
+    void itemsHaveCategories() {
         assertEquals("Snacks", vendor.getCategory("Candy"));
-        vendor.restock("Soda", 4,2.00);
+        vendor.restock("Soda", 4, 2.00);
         //default for new items
         assertEquals("General", vendor.getCategory("Soda"));
         assertTrue(vendor.setCategory("Soda", "Drinks"));
@@ -396,13 +393,13 @@ public class VendorTest {
     }
 
     @Test
-    void discountLowersItemPrice(){
+    void discountLowersItemPrice() {
         assertTrue(vendor.applyDiscount("Candy", 20));
         assertEquals(1.00, vendor.getPrice("Candy"), DELTA);
     }
 
     @Test
-    void purchaseChargesDiscountedPrice(){
+    void purchaseChargesDiscountedPrice() {
         vendor.applyDiscount("Candy", 20);
         vendor.addMoney(1.00);
         //not enough at full price
@@ -411,7 +408,7 @@ public class VendorTest {
     }
 
     @Test
-    void categoryDiscountOnlyAffectsThatCategory(){
+    void categoryDiscountOnlyAffectsThatCategory() {
         vendor.restock("Soda", 4, 2.00);
         vendor.setCategory("Soda", "Drinks");
         assertEquals(2, vendor.applyCategoryDiscount("Snacks", 50));
@@ -423,14 +420,14 @@ public class VendorTest {
     }
 
     @Test
-    void removeDiscountRestoresPrice(){
+    void removeDiscountRestoresPrice() {
         vendor.applyDiscount("Gum", 50);
         assertTrue(vendor.removeDiscount("Gum"));
         assertEquals(0.50, vendor.getPrice("Gum"), DELTA);
     }
 
     @Test
-    void invalidDiscountRejection(){
+    void invalidDiscountRejection() {
         assertThrows(IllegalArgumentException.class, () -> vendor.applyDiscount("Candy", -10));
         assertThrows(IllegalArgumentException.class, () -> vendor.applyDiscount("Candy", 150));
         assertThrows(IllegalArgumentException.class, () -> vendor.applyCategoryDiscount("Snacks", 101));
@@ -438,33 +435,33 @@ public class VendorTest {
     }
 
     @Test
-    void discountOnUnknownCheck(){
+    void discountOnUnknownCheck() {
         assertFalse(vendor.applyDiscount("Chips", 10));
         assertEquals(0, vendor.applyCategoryDiscount("Drinks", 10));
     }
 
     @Test
-    void discountShowsInReportAndDetails(){
+    void discountShowsInReportAndDetails() {
         vendor.applyDiscount("Candy", 20);
         assertTrue(vendor.getInventoryReport().contains("Candy: 10 in stock @ $1.00 (20% off)"));
         assertTrue(vendor.getItemDetails("Candy").startsWith("Candy - $1.00"));
     }
 
     @Test
-    void itemsDefaultNotBestseller(){
+    void itemsDefaultNotBestseller() {
         assertFalse(vendor.isBestseller("Candy"));
         assertTrue(vendor.getBestsellers().isEmpty());
     }
 
     @Test
-    void markBestsellerFlagsItem(){
+    void markBestsellerFlagsItem() {
         assertTrue(vendor.markBestseller("Gum"));
         assertTrue(vendor.isBestseller("Gum"));
         assertEquals(List.of("Gum"), vendor.getBestsellers());
     }
 
     @Test
-    void unmarkBestsellerClearsFlag(){
+    void unmarkBestsellerClearsFlag() {
         vendor.markBestseller("Gum");
         assertTrue(vendor.unmarkBestseller("Gum"));
         assertFalse(vendor.isBestseller("Gum"));
@@ -472,13 +469,13 @@ public class VendorTest {
     }
 
     @Test
-    void markingUnknownItemFails(){
+    void markingUnknownItemFails() {
         assertFalse(vendor.markBestseller("Chips"));
         assertFalse(vendor.isBestseller("Chips"));
     }
 
     @Test
-    void topSellersPurchaseHistoryMark(){
+    void topSellersPurchaseHistoryMark() {
         vendor.restock("Chips", 5, 1.00);
         vendor.addMoney(10.00);
         vendor.select("Chips");
@@ -490,13 +487,13 @@ public class VendorTest {
     }
 
     @Test
-    void itemsNoSalesNotMarkedBestseller(){
+    void itemsNoSalesNotMarkedBestseller() {
         vendor.markTopSellers(3);
         assertTrue(vendor.getBestsellers().isEmpty());
     }
 
     @Test
-    void bestsellerTagShowsInInv(){
+    void bestsellerTagShowsInInv() {
         vendor.markBestseller("Candy");
         assertTrue(vendor.getInventoryReport().contains("Candy: 10 in stock @ $1.25 [Bestseller]"));
         assertFalse(vendor.getInventoryReport().contains("Gum: 5 in stock @ $0.50 [Bestseller]"));

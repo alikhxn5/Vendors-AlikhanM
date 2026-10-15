@@ -3,7 +3,7 @@
  * been sold, a description customers can read, a category and discount used for sales
  * and promotions, and whether it is marked as a bestseller.
  */
-class Item{
+class Item {
     static final String DEFAULT_DESCRIPTION = "No description available.";
     static final String DEFAULT_CATEGORY = "General";
 
@@ -20,15 +20,15 @@ class Item{
     int discountPercent;
     boolean bestseller;
 
-    Item(double price, int numPieces){
+    Item(double price, int numPieces) {
         this(price, numPieces, DEFAULT_DESCRIPTION);
     }
 
-    Item(double price, int numPieces, String description){
+    Item(double price, int numPieces, String description) {
         this(price, numPieces, description, DEFAULT_CATEGORY);
     }
 
-    Item(double price, int numPieces, String description, String category){
+    Item(double price, int numPieces, String description, String category) {
         this.price = price;
         this.stock = numPieces;
         this.description = description;
@@ -36,16 +36,16 @@ class Item{
     }
 
     // returns the price a customer pays right now, after any discount
-    double getSalePrice(){
+    double getSalePrice() {
         return price * (100 - discountPercent) / 100.0;
     }
 
-    void restock(int amount){
+    void restock(int amount) {
         this.stock = this.stock + amount;
     }
 
     // removes sold pieces from stock and records the sale
-    void purchase(int amount){
+    void purchase(int amount) {
         this.stock = this.stock - amount;
         this.purchaseCount = this.purchaseCount + amount;
     }
