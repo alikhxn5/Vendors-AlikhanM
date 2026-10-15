@@ -56,4 +56,35 @@ public class VendorTest {
         vendor.resetBalance();
         assertEquals(0, vendor.getBalance(), DELTA);
     }
+
+    @Test
+    void buyingItemReducesStockAndBalance() {
+        vendor.addMoney(2.00);
+        assertTrue(vendor.select("Candy"));
+        assertEquals(9, vendor.getStock("Candy"));
+        assertEquals(0.75, vendor.getBalance(), DELTA);   // $2.00 - $1.25
+    }
+
+    @Test
+    void buyingWithExactChangeLeavesZeroBalance() {
+        vendor.addMoney(0.50);
+        assertTrue(vendor.select("Gum"));
+        assertEquals(4, vendor.getStock("Gum"));
+        assertEquals(0, vendor.getBalance(), DELTA);
+    }
+
+    @Test
+    void buyingWithoutEnoughMoneyFails() {
+        vendor.addMoney(1.00);                  // Candy costs $1.25
+        assertFalse(vendor.select("Candy"));
+        assertEquals(10, vendor.getStock("Candy"));
+        assertEquals(1.00, vendor.getBalance(), DELTA);
+    }
+
+    @Test
+    void buyingUnknownItemFails() {
+        vendor.addMoney(5.00);
+        assertFalse(vendor.select("Chips"));
+        assertEquals(5.00, vendor.getBalance(), DELTA);
+    }
 }
